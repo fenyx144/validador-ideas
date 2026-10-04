@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/*
+ * Paleta editorial propia: tinta + papel cálido + un acento musgo apagado.
+ * Las escalas slate/indigo se reasignan a tonos cálidos para que cualquier
+ * clase heredada (text-slate-500, etc.) siga la misma paleta.
+ */
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --color-paper: #f4f1ea;
+  --color-ink: #1f1d1a;
+  --color-muted: #6e685e;
+  --color-line: #d9d2c4;
+  --color-accent: #4f5d3a;
+  --color-ochre: #a07a2c;
+  --color-danger: #9a4a32;
+
+  --color-slate-50: #efebe2;
+  --color-slate-100: #e7e2d7;
+  --color-slate-200: #d9d2c4;
+  --color-slate-300: #c9c1b1;
+  --color-slate-400: #9a9387;
+  --color-slate-500: #6e685e;
+  --color-slate-600: #57524a;
+  --color-slate-700: #3d3934;
+  --color-slate-900: #1f1d1a;
+  --color-indigo-100: #e1e4d6;
+  --color-indigo-500: #4f5d3a;
+  --color-indigo-600: #4f5d3a;
+}
+
+body {
+  @apply bg-paper font-sans text-ink;
+}
+
+/* Clases reutilizables (componentes de estilo) con Tailwind */
+@layer components {
+  .etiqueta {
+    @apply mb-1 block font-mono text-xs text-muted;
+  }
+  .campo {
+    @apply w-full border-0 border-b border-line bg-transparent px-0 py-2 text-ink outline-none transition placeholder:text-slate-400 focus:border-ink;
+  }
+  .boton-primario {
+    @apply inline-flex items-center justify-center gap-2 bg-ink px-5 py-3 text-paper transition-colors hover:bg-accent disabled:cursor-wait disabled:opacity-70;
+  }
+  .boton-secundario {
+    @apply inline-flex items-center justify-center gap-2 border border-ink px-4 py-2 text-sm text-ink transition-colors hover:bg-ink hover:text-paper;
+  }
+}
