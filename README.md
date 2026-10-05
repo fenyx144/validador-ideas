@@ -25,7 +25,7 @@ Proyecto de portafolio de **Diego Rivas**, hecho para aprender React. El código
 
 - [Next.js](https://nextjs.org) (App Router) + React + TypeScript
 - Tailwind CSS
-- [Groq](https://console.groq.com) (API compatible con OpenAI) con el modelo Llama `llama-3.3-70b-versatile`
+- [Groq](https://console.groq.com) (API compatible con OpenAI) con el modelo Llama `openai/gpt-oss-120b`
 - [zod](https://zod.dev) para validar la entrada del usuario y el JSON del LLM
 - [recharts](https://recharts.org) para el gráfico de punto de equilibrio
 - [Vitest](https://vitest.dev) para los tests

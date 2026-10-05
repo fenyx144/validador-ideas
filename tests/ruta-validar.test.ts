@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "@/app/api/validar/route";
 import { EJEMPLOS_DEMO } from "@/lib/demos";
 import { reiniciarLimites } from "@/lib/limiteSolicitudes";
+import { reiniciarModeloResuelto } from "@/lib/groq";
 
 const analisisEjemplo = EJEMPLOS_DEMO[0].analisis;
 
@@ -31,6 +32,7 @@ const entradaValida = {
 
 beforeEach(() => {
   reiniciarLimites();
+  reiniciarModeloResuelto();
   vi.stubEnv("GROQ_API_KEY", "gsk_test");
   vi.spyOn(console, "error").mockImplementation(() => {});
   vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -64,7 +66,7 @@ describe("POST /api/validar", () => {
     expect(opciones.headers.Authorization).toBe("Bearer gsk_test");
     const cuerpo = JSON.parse(opciones.body);
     expect(cuerpo.response_format).toEqual({ type: "json_object" });
-    expect(cuerpo.model).toBe("llama-3.3-70b-versatile");
+    expect(cuerpo.model).toBe("openai/gpt-oss-120b");
     expect(JSON.stringify(json)).not.toContain("gsk_test");
   });
 
@@ -118,5 +120,40 @@ describe("POST /api/validar", () => {
     expect(estados[5]).toBe(429);
     // Otra IP no se ve afectada
     expect((await POST(peticion(entradaValida, "8.8.8.8"))).status).toBe(503);
+  });
+});
+
+describe("modelo inexistente (404)", () => {
+  it("lista modelos y reintenta con uno actual", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ error: { code: "model_not_found" } }), { status: 404 }))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: [
+              { id: "whisper-large-v3" },
+              { id: "meta-llama/llama-guard-4-12b" },
+              { id: "openai/gpt-oss-20b" },
+              { id: "openai/gpt-oss-120b" },
+            ],
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(respuestaGroq(JSON.stringify(analisisEjemplo)));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const res = await POST(peticion(entradaValida));
+    const json = await res.json();
+    expect(json.ok).toBe(true);
+    expect(json.modelo).toBe("openai/gpt-oss-120b");
+    expect(fetchMock.mock.calls.map((c) => String(c[0]))).toEqual([
+      "https://api.groq.com/openai/v1/chat/completions",
+      "https://api.groq.com/openai/v1/models",
+      "https://api.groq.com/openai/v1/chat/completions",
+    ]);
+    const body = JSON.parse(String(fetchMock.mock.calls[2][1].body));
+    expect(body.model).toBe("openai/gpt-oss-120b");
   });
 });
